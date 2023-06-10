@@ -2,7 +2,7 @@ const Product = require('../models/Product');
 const { StatusCodes } = require('http-status-codes');
 const CustomError = require('../errors');
 const path = require('path');
-
+const Review = require('../models/Review');
 
 const createProduct = async(req, res) => {
     req.body.user = req.user.userId;
@@ -36,12 +36,13 @@ const updateProduct = async(req, res) => {
     res.status(StatusCodes.OK).json({ product });
 };
 
-const deleteProduct = async(req, res) => {
+const deleteProduct = async (req, res) => {
     const { id: productId } = req.params;
     const product = await Product.findOne({ _id: productId });
     if (!product) {
         throw new CustomError.NotFoundError(`No product with id : ${productId}`);
     }
+    await Review.deleteMany({ product: productId }); // Удаление связанных отзывов
     await Product.deleteOne({ _id: productId });
     res.status(StatusCodes.OK).json({ msg: 'Success! Product removed.' });
 };
