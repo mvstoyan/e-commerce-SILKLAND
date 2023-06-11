@@ -47,7 +47,7 @@ app.use(helmet());
 app.use(cors());
 app.use(mongoSanitize());
 
-app.use(morgan('tiny'))
+// app.use(morgan('tiny'))
 app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
 
@@ -74,17 +74,6 @@ function sanitizeInput(input) {
 
 app.use(express.static('./public'));
 app.use(fileUpload());
-
-app.get('/', (req, res) => {
-  console.log(req.files)
-  res.send('e-commerce api');
-})
-
-app.get('/api/v1', (req, res) => {
-  //console.log(req.cookies);
-  console.log(req.signedCookies);
-  res.send('e-commerce api');
-})
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
