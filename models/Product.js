@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+
+// Define the ProductSchema
 const ProductSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -56,6 +58,7 @@ const ProductSchema = new mongoose.Schema({
 { timestamps: true,toJSON:{ virtuals: true }, toObject:{ virtuals: true } }
 );
 
+// Define a virtual field 'reviews' to populate the reviews associated with a product
 ProductSchema.virtual('reviews', {
     ref: 'Review',
     localField:'_id',
@@ -63,6 +66,7 @@ ProductSchema.virtual('reviews', {
     justOne: false,
 });
 
+// Pre-remove middleware to delete all reviews associated with a product when it is removed
 ProductSchema.pre('remove', async function (next) {
     await this.model('Review').deleteMany({ product: this._id });
     next();

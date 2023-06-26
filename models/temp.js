@@ -8,29 +8,29 @@ import {
  * https://mongodb.github.io/node-mongodb-native
  */
 
-const agg = [
+const agg = [ // Aggregation pipeline to calculate average rating and number of reviews
   {
     '$match': {
-      'product': new ObjectId('64848cd43d658fb010520241')
+      'product': new ObjectId('64848cd43d658fb010520241') // Match documents with a specific product ObjectId
     }
   }, {
     '$group': {
       '_id': null, 
       'averageRating': {
-        '$avg': '$rating'
+        '$avg': '$rating' // Calculate the average rating using the 'rating' field
       }, 
       'numOfReviews': {
-        '$sum': 1
+        '$sum': 1 // Count the number of reviews
       }
     }
   }
 ];
 
-const client = await MongoClient.connect(
+const client = await MongoClient.connect( // Connect to the MongoDB server
   '',
   { useNewUrlParser: true, useUnifiedTopology: true }
 );
-const coll = client.db('SILKLAND').collection('reviews');
-const cursor = coll.aggregate(agg);
-const result = await cursor.toArray();
-await client.close();
+const coll = client.db('SILKLAND').collection('reviews'); // Access the 'reviews' collection in the 'SILKLAND' database
+const cursor = coll.aggregate(agg); // Execute the aggregation query and obtain a cursor
+const result = await cursor.toArray(); // Convert the cursor to an array of results
+await client.close(); // Close the MongoDB connection

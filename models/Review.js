@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-
-const ReviewSchema = mongoose.Schema(
+// Define the ReviewSchema
+const ReviewSchema = mongoose.Schema( 
   {
     rating: {
       type: Number,
@@ -32,9 +32,12 @@ const ReviewSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+// Create an index on 'product' and 'user' to ensure unique reviews per product-user combination
 ReviewSchema.index({ product: 1, user: 1 }, { unique: true });
 
+// Static method to calculate the average rating and number of reviews for a specific product
 ReviewSchema.statics.calculateAverageRating = async function (productId) {
+  // Perform an aggregation to calculate the average rating and number of reviews
   const result = await this.aggregate([
     { $match:{ product: productId } },
     {
@@ -46,7 +49,7 @@ ReviewSchema.statics.calculateAverageRating = async function (productId) {
     },
   ]);
   console.log(result);
-  try {
+  try { // Update the 'averageRating' and 'numOfReviews' fields in the associated Product model
     await this.model('Product').findOneAndUpdate(
         { _id: productId },
         {
@@ -59,10 +62,12 @@ ReviewSchema.statics.calculateAverageRating = async function (productId) {
   }
 };
 
+// Post-save middleware to recalculate the average rating and number of reviews after saving a review
 ReviewSchema.post('save', async function () {
   await this.constructor.calculateAverageRating(this.product);
 });
 
+// Pre-delete middleware to recalculate the average rating and number of reviews before deleting a review
 ReviewSchema.pre('deleteOne', { document: true }, async function (next) {
   await this.constructor.calculateAverageRating(this.product);
 });

@@ -16,6 +16,7 @@ const { JSDOM } = require('jsdom');
 const createDOMPurify = require('dompurify');
 const mongoSanitize = require('express-mongo-sanitize');
 
+// Creating a DOMPurify object for sanitization
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 
@@ -35,30 +36,32 @@ const orderRouter = require('./routes/orderRoutes');
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
 
-app.set('trust proxy' , 1);
-app.use(
+// Configuring the Express app
+
+app.set('trust proxy' , 1); // Set trust proxy
+app.use( // Rate limiter middleware to limit API requests
   rateLimiter({
-    winwowMs: 15 * 60 *1000,
-    max: 60,
+    winwowMs: 15 * 60 *1000, // 15 minutes
+    max: 60, // Maximum 60 requests per windowMs
   })
 );
 
-app.use(helmet());
-app.use(cors());
-app.use(mongoSanitize());
-
+app.use(helmet()); // Helmet middleware for secure HTTP headers
+app.use(cors()); // Cross-Origin Resource Sharing (CORS) middleware
+app.use(mongoSanitize()); // Express MongoDB Sanitize middleware to prevent MongoDB query injection
+// Middleware for logging HTTP requests (optional)
 // app.use(morgan('tiny'))
-app.use(express.json());
-app.use(cookieParser(process.env.JWT_SECRET));
+app.use(express.json()); // JSON body parser middleware
+app.use(cookieParser(process.env.JWT_SECRET)); // Cookie parser middleware with JWT secret
 
-app.use((req, res, next) => {
+app.use((req, res, next) => { // Middleware to sanitize user input in req.body using DOMPurify
   // Clean user input in req.body
   req.body = sanitizeInput(req.body);
 
   next();
 });
 
-function sanitizeInput(input) {
+function sanitizeInput(input) { // Function to recursively sanitize user input
   if (typeof input === 'object') {
     // Recursively sanitize all properties of the object
     for (let key in input) {
@@ -72,9 +75,10 @@ function sanitizeInput(input) {
   return input;
 }
 
-app.use(express.static('./public'));
-app.use(fileUpload());
+app.use(express.static('./public')); // Serve static files from the './public' directory
+app.use(fileUpload()); // File upload middleware
 
+// Mounting the routers
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/products', productRouter);
@@ -82,14 +86,14 @@ app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/orders', orderRouter);
 
 
-app.use(notFoundMiddleware);
-app.use(errorHandlerMiddleware)
+app.use(notFoundMiddleware); // Not found middleware to handle invalid routes
+app.use(errorHandlerMiddleware) // Error handler middleware
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5000; // Starting the server
 const start = async () => {
   try {
-    await connectDB(process.env.MONGO_URL)
-    app.listen(port, () =>
+    await connectDB(process.env.MONGO_URL) // Connect to the MongoDB database
+    app.listen(port, () =>  // Start the Express server
       console.log(`Server is listening on port ${port}...`)
     );
   } catch (error) {
