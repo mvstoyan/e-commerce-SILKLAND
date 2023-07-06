@@ -171,8 +171,6 @@
 - [] description: {type:String}
 - [] image: {type:String}
 - [] category: {type:String}
-- [] company: {type:String}
-- [] colors: {type:[]}
 - [] featured: {type:Boolean}
 - [] freeShipping: {type:Boolean}
 - [] inventory:{type:Number}
